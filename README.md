@@ -4,9 +4,10 @@ Neural and behavioural analysis code (dPCA, ROC, SVM, motion subspaces, behaviou
 The Python package is `ed_analysis` (code in `neural_analysis/`, plus `config.py`).
 The behavioural statistics call **R** (mixed models via `lme4`, `glmmTMB`, `emmeans`, …) through `rpy2`, so both Python and R must be installed.
 
-Everything below is written for a machine with nothing installed. The commands were tested on
-Ubuntu-family Linux with Python 3.12 (Linux Mint 22 / Ubuntu 24.04). macOS and Windows notes are at the end and are
-**not** tested.
+Everything below is written for a machine with nothing installed. The code runs natively on Windows (where it was
+originally developed) and on Linux. The step-by-step commands in sections 2-6 were verified on Ubuntu-family Linux with
+Python 3.12 (Linux Mint 22 / Ubuntu 24.04). **Windows users: follow the native Windows instructions at the end** instead of
+sections 2 and 4. Those and the macOS notes have not been re-tested since this README was written.
 
 ## 1. System requirements
 
@@ -149,9 +150,46 @@ If this prints `All good.`, the installation is complete. Scripts are run direct
   `neural_analysis/dPCA/deviation_bsl/` or add that folder to `PYTHONPATH`.
 - **Files not found**: check `DATA_DIR` in `.env`; the paths actually used are defined in `config.py`.
 
-## macOS and Windows (not tested)
+## Windows (native)
 
-- **macOS**: `brew install git python r`, then follow steps 3 and 5–6. For step 4 use the standard CRAN mirror, which serves
-  macOS binaries: `options(repos = c(CRAN = "https://cloud.r-project.org"))` instead of the Posit line.
-- **Windows**: use WSL2 with Ubuntu 24.04 (`wsl --install -d Ubuntu-24.04`) and follow the Linux instructions inside it.
-  `rpy2` and the R toolchain are much harder to set up on native Windows.
+Replaces sections 2 and 4; sections 1, 5 and the idea of 3 and 6 still apply, with the command changes below.
+
+1. **Install** (default options unless noted):
+   - Python 3.10-3.12 from https://www.python.org/downloads/windows/ — tick **Add python.exe to PATH**.
+   - R 4.1+ from https://cran.r-project.org/bin/windows/base/
+   - Git from https://git-scm.com/download/win
+   - Optional: [Rtools](https://cran.r-project.org/bin/windows/Rtools/) matching your R version. Only needed if an R package has
+     no Windows binary; CRAN normally serves binaries, so you can usually skip it.
+2. **Python environment** (PowerShell, from the repo root):
+   ```powershell
+   py -m venv .venv
+   .venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   pip install -e .
+   ```
+   If activation is blocked, run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once. In `cmd.exe` use
+   `.venv\Scripts\activate.bat`. Activate the environment in every new terminal.
+3. **R packages**: start R (or RStudio) and run the same `install.packages(...)` lines as in section 4, but with the standard
+   CRAN mirror, which serves Windows binaries, instead of the Posit line:
+   ```r
+   options(repos = c(CRAN = "https://cloud.r-project.org"))
+   install.packages("Matrix")
+   install.packages(c("lme4", "lmerTest", "pbkrtest", "glmmTMB",
+                      "emmeans", "car", "performance", "DHARMa"))
+   ```
+4. **Let `rpy2` find R.** If importing `rpy2` fails or cannot locate R, set `R_HOME` and add R's `bin\x64` folder to `PATH`
+   (adjust the version number):
+   ```powershell
+   setx R_HOME "C:\Program Files\R\R-4.5.1"
+   # then add  C:\Program Files\R\R-4.5.1\bin\x64  to your PATH, and open a new terminal
+   ```
+5. **Data location**: `copy .env_example .env`, then set e.g. `DATA_DIR=D:/path/to/data` (forward slashes work on Windows).
+6. **Check the installation**: save the script from section 6 as `check_install.py` and run `python check_install.py` from the
+   repo root (PowerShell has no `<<'EOF'` heredoc).
+
+Scripts are run the same way as on Linux, e.g. `python neural_analysis\dPCA\dPCA_calc_subspaces.py`.
+
+## macOS (not tested)
+
+`brew install git python r`, then follow steps 3 and 5–6. For step 4 use the standard CRAN mirror, which serves
+macOS binaries: `options(repos = c(CRAN = "https://cloud.r-project.org"))` instead of the Posit line.
