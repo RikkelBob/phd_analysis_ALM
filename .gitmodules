@@ -1,0 +1,3 @@
+[submodule "subspaceID"]
+	path = subspaceID
+	url = https://github.com/economolab/subspaceID
